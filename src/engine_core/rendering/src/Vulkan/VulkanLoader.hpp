@@ -17,7 +17,6 @@
 #include <Result.hpp>
 #include "VkMaterialInstance.hpp"
 
-
 namespace Hush {
 
 	struct GeoSurface {

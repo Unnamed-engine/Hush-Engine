@@ -2,19 +2,21 @@
   "name": "hush-engine",
   "version": "0.1.0",
   "dependencies": [
+    "catch2",
+    "fastgltf",
     "fmt",
+    "glm",
     "magic-enum",
+    "outcome",
     {
       "name": "sdl2",
-      "features": [ "vulkan" ]
+      "features": [
+        "vulkan"
+      ]
     },
     "spdlog",
     "vk-bootstrap",
     "volk",
-    "vulkan",
-    "glm",
-    "outcome",
-    "fastgltf",
-    "catch2"
+    "vulkan"
   ]
 }

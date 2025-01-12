@@ -9,6 +9,7 @@ add_subdirectory(utils)
 add_subdirectory(scripting)
 add_subdirectory(resources)
 add_subdirectory(filesystem)
+add_subdirectory(threading)
 
 add_library(HushEngine STATIC
         src/main.cpp
@@ -30,6 +31,7 @@ set(ENGINE_LIBS
         HushUtils
         HushCSharp
         HushFilesystem
+        HushThreading
 )
 
 if (WIN32)

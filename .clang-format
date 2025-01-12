@@ -4,6 +4,10 @@ BasedOnStyle: Microsoft
 NamespaceIndentation: All
 BinPackArguments: true
 BinPackParameters: OnePerLine
+AccessModifierOffset: -4
+BreakTemplateDeclarations: Yes
+BreakAfterAttributes: Always
+PackConstructorInitializers: Never
 ---
 Language: CSharp
 BasedOnStyle: Microsoft
