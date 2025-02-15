@@ -1,0 +1,55 @@
+{
+  "version": 6,
+  "include": [
+    "default-presets.json"
+  ],
+  "configurePresets": [
+    {
+      "name": "windows-x64-default",
+      "hidden": true,
+      "inherits": [
+        "default"
+      ],
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
+      }
+    },
+    {
+      "name": "windows-x64-debug",
+      "inherits": [
+        "windows-x64-default"
+      ],
+      "displayName": "Windows x64 Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VCPKG_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-x64-release",
+      "inherits": [
+        "windows-x64-default"
+      ],
+      "displayName": "Windows x64 Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "VCPKG_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-x64-release-lto",
+      "displayName": "Windows x64 Release with LTO",
+      "inherits": [
+          "windows-x64-release"
+      ],
+      "cacheVariables": {
+        "HUSH_ENABLE_LTO": "ON"
+      }
+    }
+  ]
+}

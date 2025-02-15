@@ -1,9 +1,12 @@
 # Scripting
 
-add_library(HushCSharp OBJECT src/DotnetHost.cpp src/ScriptingManager.cpp)
+hush_add_library(
+        TARGET_NAME HushCSharp
+        LIB_TYPE OBJECT
+        SRCS src/DotnetHost.cpp src/ScriptingManager.cpp
+        PUBLIC_HEADER_DIRS src
+)
 
-target_include_directories(HushCSharp PUBLIC src)
+add_library(Hush::CSharp ALIAS HushCSharp)
 
 target_link_libraries(HushCSharp PUBLIC HushUtils HushLog coreclr)
-
-set_all_warnings(HushCSharp)

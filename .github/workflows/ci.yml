@@ -19,6 +19,7 @@ jobs:
 
   build-devtool:
     name: Build and Upload devtool
+    needs: format-devtool
     strategy:
       matrix:
         os: [ windows-latest ]
@@ -38,7 +39,7 @@ jobs:
           path: src/devtool/target/release/hush${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 
       - name: Upload artifact
-        if: !( github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
+        if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           # Name must be hush-devtool-<os>-<hash>
@@ -47,6 +48,7 @@ jobs:
   test-devtool:
     name: Test devtool
     runs-on: ubuntu-latest
+    needs: build-devtool
 
     steps:
       - uses: actions/checkout@v4
@@ -54,14 +56,14 @@ jobs:
         working-directory: src/devtool
         run: cargo test
 
-  build-hush:
+  build-hush-windows:
     name: Build hush engine
+    needs: build-devtool
     strategy:
       matrix:
-        os: [ windows-latest ]
-        build: [ debug, release ]
+        build-type: [ debug, release ]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -69,20 +71,22 @@ jobs:
         if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
         uses: actions/download-artifact@v4
         with:
-          name: hush-devtool-${{ matrix.os }}-${{ github.ref == 'refs/heads/dev' && 'dev' || 'main' }}
+          name: hush-devtool-${{ matrix.os }}-${{ github.ref == 'refs/heads/dev' && 'dev' || 'main' }}.exe
 
       - name: Get devtool
         if: !( github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
         uses: actions/download-artifact@v4
         with:
-          name: hush-devtool-${{ matrix.os }}-${{ github.sha }}
+          name: hush-devtool-${{ matrix.os }}-${{ github.sha }}.exe
 
       # Rename the devtool to hush-devtool{.exe}
       - name: Rename devtool
-        run: mv ${{ github.workspace }}/hush-devtool-${{ matrix.os }}* ${{ github.workspace }}/hush-devtool${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+        run: mv hush${{ matrix.os == 'windows-latest' && '.exe' || '' }} hush-devtool${{ matrix.os == 'windows-latest' && '.exe' || '' }}
         shell: bash
 
-      # Set the
 
       - name: Configure hush
-        run: hush-devtool configure --preset
+        run: hush-devtool configure -p windows-x64-${{ matrix.build }} -v
+
+      - name: Build hush
+        run: .\src\devtool\target\release\hush.exe build -p windows-x64-${{ matrix.build }} -v
