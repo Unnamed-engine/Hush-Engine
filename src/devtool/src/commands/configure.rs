@@ -8,11 +8,32 @@ use std::process::{ExitCode, Stdio};
 #[derive(Debug, Parser)]
 pub struct ConfigureCommand {
     /// Preset to use, for example, windows-x64-debug (check CMakePresets.json)
-    preset: String,
+    /// If this option is not set, the command will list all available presets
+    /// and exit
+    #[arg(short, long)]
+    preset: Option<String>,
 
     /// Verbose output
     #[arg(default_value_t = false, short, long)]
     verbose: bool,
+}
+
+impl ConfigureCommand {
+    fn list_presets(&self) -> anyhow::Result<()> {
+        let cmake_command = std::process::Command::new("cmake")
+            .arg("--list-presets")
+            .output()?;
+
+        if cmake_command.status.success() {
+            let output = String::from_utf8_lossy(&cmake_command.stdout);
+            println!("{}", output);
+        } else {
+            let error = String::from_utf8_lossy(&cmake_command.stdout);
+            eprintln!("Error listing presets: {}", error);
+        }
+
+        Ok(())
+    }
 }
 
 impl CliCommand for ConfigureCommand {
@@ -22,6 +43,13 @@ impl CliCommand for ConfigureCommand {
         if cmake_version.as_str() < "3.26" {
             return Err(anyhow!("CMake must be version 3.26 or newer"));
         }
+
+        let preset = if let Some(preset) = &self.preset {
+            preset
+        } else {
+            self.list_presets()?;
+            return Ok(ExitCode::SUCCESS);
+        };
 
         let stdout_output = if self.verbose {
             Stdio::inherit()
@@ -36,7 +64,11 @@ impl CliCommand for ConfigureCommand {
 
         let cmake_command = std::process::Command::new("cmake")
             .arg("--preset")
-            .arg(&self.preset)
+            .arg(&preset)
+            .arg("-S")
+            .arg(".")
+            .arg("-B")
+            .arg(format!("build/{}", preset))
             .stdout(stdout_output)
             .stderr(stderr_output)
             .stdin(Stdio::null())
