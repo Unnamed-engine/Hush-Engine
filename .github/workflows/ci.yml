@@ -44,6 +44,7 @@ jobs:
         with:
           # Name must be hush-devtool-<os>-<hash>
           name: hush-devtool-${{ matrix.os }}-${{ github.sha }}
+          path: src/devtool/target/release/hush${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 
   test-devtool:
     name: Test devtool
