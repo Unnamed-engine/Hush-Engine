@@ -63,8 +63,9 @@ jobs:
     strategy:
       matrix:
         build-type: [ debug, release ]
+        os: [ windows-latest ]
 
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
