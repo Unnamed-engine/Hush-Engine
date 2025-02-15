@@ -1,0 +1,88 @@
+name: CI devtool
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  format-devtool:
+    name: Format devtool
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Format
+        working-directory: src/devtool
+        run: cargo fmt --check
+
+  build-devtool:
+    name: Build and Upload devtool
+    strategy:
+      matrix:
+        os: [ windows-latest ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release
+        run: cargo build --release
+        working-directory: src/devtool
+      - name: Upload artifact
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          # Name must be hush-devtool-<os>-{dev|main}
+          name: hush-devtool-${{ matrix.os }}-${{ github.ref == 'refs/heads/dev' && 'dev' || 'main' }}
+          path: src/devtool/target/release/hush${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+
+      - name: Upload artifact
+        if: !( github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
+        uses: actions/upload-artifact@v4
+        with:
+          # Name must be hush-devtool-<os>-<hash>
+          name: hush-devtool-${{ matrix.os }}-${{ github.sha }}
+
+  test-devtool:
+    name: Test devtool
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        working-directory: src/devtool
+        run: cargo test
+
+  build-hush:
+    name: Build hush engine
+    strategy:
+      matrix:
+        os: [ windows-latest ]
+        build: [ debug, release ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get devtool
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+        uses: actions/download-artifact@v4
+        with:
+          name: hush-devtool-${{ matrix.os }}-${{ github.ref == 'refs/heads/dev' && 'dev' || 'main' }}
+
+      - name: Get devtool
+        if: !( github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
+        uses: actions/download-artifact@v4
+        with:
+          name: hush-devtool-${{ matrix.os }}-${{ github.sha }}
+
+      # Rename the devtool to hush-devtool{.exe}
+      - name: Rename devtool
+        run: mv ${{ github.workspace }}/hush-devtool-${{ matrix.os }}* ${{ github.workspace }}/hush-devtool${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+        shell: bash
+
+      # Set the
+
+      - name: Configure hush
+        run: hush-devtool configure --preset
