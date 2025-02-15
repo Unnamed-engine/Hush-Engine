@@ -20,6 +20,10 @@ pub struct FormatCommand {
     /// have been modified will be formatted
     #[arg(default_value_t = false, short, long)]
     all_files: bool,
+
+    /// Check only, do not format files
+    #[arg(default_value_t = false, short, long)]
+    check: bool,
 }
 
 impl FormatCommand {
@@ -31,7 +35,7 @@ impl FormatCommand {
         }
     }
 
-    fn clang_format(&self) -> anyhow::Result<()> {
+    fn clang_format(&self) -> anyhow::Result<ExitCode> {
         let (stdout_output, stderr_output) = self.create_stdio();
 
         info!("Formatting project files");
@@ -44,15 +48,22 @@ impl FormatCommand {
 
         if files.is_empty() {
             info!("No files to format");
-            return Ok(());
+            return Ok(ExitCode::SUCCESS);
         }
+
+        let check_flags = if self.check {
+            vec!["--dry-run", "--Werror"]
+        } else {
+            vec![]
+        };
 
         let status = Command::new("clang-format")
             .args(["-i"])
             .args(files)
+            .args(check_flags)
             .stdout(stdout_output)
             .stderr(stderr_output)
-            .status();
+            .output();
 
         if let Err(e) = &status {
             if let std::io::ErrorKind::NotFound = e.kind() {
@@ -63,15 +74,19 @@ impl FormatCommand {
             return Err(anyhow!("Error running clang-format: {}", e));
         }
 
-        let status = status.unwrap();
+        let output = status?;
 
-        if !status.success() {
-            let error_message = "clang-format failed";
-            error!("{}", error_message);
-            return Err(anyhow!(error_message));
+        if !output.status.success() {
+            // If stdout is piped, print the output
+            let output = output.stderr;
+            let output = String::from_utf8_lossy(&output);
+            if !output.is_empty() {
+                error!("{}", output);
+            }
+            return Ok(ExitCode::FAILURE);
         }
 
-        Ok(())
+        Ok(ExitCode::SUCCESS)
     }
 
     fn rustfmt(&self) -> anyhow::Result<()> {
@@ -99,7 +114,10 @@ impl FormatCommand {
 
 impl CliCommand for FormatCommand {
     fn run(self) -> anyhow::Result<ExitCode> {
-        self.clang_format()?;
+        if let Ok(exit_code) = self.clang_format() {
+            return Ok(exit_code);
+        }
+
         self.rustfmt()?;
 
         info!("Project formatted successfully");

@@ -1,20 +1,18 @@
 
-add_library(HushCore OBJECT
-        src/ISystem.cpp
-        src/Scene.cpp
-        src/Entity.cpp
-        src/Query.cpp
-        src/traits/EntityTraits.cpp
+hush_add_library(
+        TARGET_NAME HushCore
+        LIB_TYPE OBJECT
+        SRCS src/ISystem.cpp
+             src/Scene.cpp
+             src/Entity.cpp
+             src/Query.cpp
+             src/traits/EntityTraits.cpp
+        PUBLIC_HEADER_DIRS src
+        PRIVATE_HEADER_DIRS private
 )
-
 add_library(Hush::Core ALIAS HushCore)
 
-target_include_directories(HushCore PUBLIC src)
-target_include_directories(HushCore PRIVATE private)
-
 target_link_libraries(HushCore PUBLIC flecs::flecs_static Hush::Utils Hush::Log)
-
-set_all_warnings(HushCore)
 
 add_test_target(
         TARGET_NAME HushCoreTest

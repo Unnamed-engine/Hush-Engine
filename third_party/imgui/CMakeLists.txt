@@ -16,7 +16,6 @@ set(IMGUI_SOURCES
 )
 
 message("ImGui base sources")
-print_files("${IMGUI_SOURCES}")
 
 add_library(imgui STATIC ${IMGUI_SOURCES})
 

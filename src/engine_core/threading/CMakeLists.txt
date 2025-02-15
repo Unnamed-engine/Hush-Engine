@@ -1,19 +1,18 @@
 # Threading support subproject
 
-add_library(HushThreading OBJECT
-        src/ThreadPool.cpp
-        src/async/SyncWait.cpp
+hush_add_library(
+        TARGET_NAME HushThreading
+        LIB_TYPE OBJECT
+        SRCS src/ThreadPool.cpp src/async/SyncWait.cpp
+        PUBLIC_HEADER_DIRS src
 )
+add_library(Hush::Threading ALIAS HushThreading)
 
-target_include_directories(HushThreading PUBLIC src)
-
-target_link_libraries(HushThreading PUBLIC HushUtils HushLog)
+target_link_libraries(HushThreading PUBLIC Hush::Log Hush::Utils)
 
 if (linux)
     target_link_libraries(HushThreading PUBLIC pthread)
 endif()
-
-set_all_warnings(HushThreading)
 
 add_test_target(
         TARGET_NAME HushThreadingTest

@@ -9,6 +9,7 @@ use std::time::Instant;
 #[derive(Debug, Parser)]
 pub struct BuildCommand {
     /// Preset to use, for example, windows-x64-debug (check CMakePresets.json)
+    #[arg(short, long)]
     preset: String,
 
     /// Verbose output

@@ -1,12 +1,12 @@
 # Resource classes and resource manager-things.
 
 
-add_library(HushResource OBJECT
-        src/ResourceManager.cpp
+hush_add_library(
+        TARGET_NAME HushResources
+        LIB_TYPE OBJECT
+        SRCS src/ResourceManager.cpp
+        PUBLIC_HEADER_DIRS src
 )
+add_library(Hush::Resources ALIAS HushResources)
 
-target_include_directories(HushResource PUBLIC src)
-
-target_link_libraries(HushResource PUBLIC HushUtils HushLog HushFilesystem)
-
-set_all_warnings(HushResource)
+target_link_libraries(HushResources PUBLIC Hush::Utils Hush::Log Hush::Filesystem)

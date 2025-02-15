@@ -12,28 +12,35 @@ add_subdirectory(filesystem)
 add_subdirectory(threading)
 add_subdirectory(core)
 
-add_library(HushEngine STATIC
-        src/main.cpp
-        src/HushEngine.cpp
+hush_add_library(
+        TARGET_NAME HushEngine
+        LIB_TYPE STATIC
+        SRCS src/main.cpp src/HushEngine.cpp
+        PUBLIC_HEADER_DIRS src
 )
 
-target_include_directories(HushEngine PRIVATE src)
+add_library(Hush::Engine ALIAS HushEngine)
 
-add_executable(HushRuntime src/dummy.cpp)
-
-target_link_libraries(HushRuntime PRIVATE HushEngine)
-
-set(ENGINE_LIBS
-        coreclr
+target_link_libraries(HushEngine PUBLIC coreclr
+        Hush::AppLoader
+        Hush::Input
+        Hush::Log
+        Hush::Rendering
+        Hush::Utils
+        Hush::CSharp
+        Hush::Resources
+        Hush::Filesystem
+        Hush::Threading
+        Hush::Core
         HushAppLoader
-        HushInput
-        HushLog
-        HushRendering
-        HushUtils
-        HushCSharp
-        HushFilesystem
-        HushThreading
 )
+
+hush_add_executable(
+        TARGET_NAME HushRuntime
+        SRCS src/dummy.cpp
+)
+
+target_link_libraries(HushRuntime PRIVATE Hush::Engine)
 
 if (WIN32)
     set_target_properties(HushEngine PROPERTIES
@@ -49,10 +56,6 @@ if (WIN32)
             VS_GLOBAL_ClangTidyChecks "-* \"\"--config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=.*"
     )
 endif ()
-
-target_link_libraries(HushEngine PUBLIC ${ENGINE_LIBS})
-
-set_all_warnings(HushEngine)
 
 #Copy the .NET runtime configuration
 set(RUNTIME_CONFIG_SOURCE_DIR ../editor/assembly-test/bin)

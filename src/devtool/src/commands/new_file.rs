@@ -4,7 +4,6 @@ use anyhow::anyhow;
 use clap::Parser;
 use lazy_static::lazy_static;
 use minijinja::context;
-use rfd::FileDialog;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -17,7 +16,7 @@ use tracing::{error, info};
 pub struct NewFileCommand {
     /// File path
     #[arg(short, long)]
-    file_path: Option<PathBuf>,
+    file_path: PathBuf,
 
     /// File brief
     #[arg(short, long)]
@@ -51,13 +50,7 @@ lazy_static! {
 
 impl CliCommand for NewFileCommand {
     fn run(self) -> anyhow::Result<ExitCode> {
-        let current_dir = std::env::current_dir()?;
-        let new_file_path = self.file_path.unwrap_or_else(|| {
-            FileDialog::new()
-                .set_directory(current_dir)
-                .save_file()
-                .unwrap_or_default()
-        });
+        let new_file_path = self.file_path;
 
         let brief = self.brief.unwrap_or_else(|| "".into());
 
