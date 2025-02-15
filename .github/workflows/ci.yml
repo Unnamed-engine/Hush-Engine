@@ -74,7 +74,7 @@ jobs:
           name: hush-devtool-${{ matrix.os }}-${{ github.ref == 'refs/heads/dev' && 'dev' || 'main' }}.exe
 
       - name: Get devtool
-        if: !( github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
+        if: github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main'
         uses: actions/download-artifact@v4
         with:
           name: hush-devtool-${{ matrix.os }}-${{ github.sha }}.exe
